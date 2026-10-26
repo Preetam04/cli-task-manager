@@ -1,0 +1,23 @@
+{
+  "name": "task-manager",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "task-manager": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "bun  src/index.ts",
+    "build": "bun run build.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  },
+  "dependencies": {
+    "chalk": "^6.0.1",
+    "commander": "^15.0.0"
+  }
+}
