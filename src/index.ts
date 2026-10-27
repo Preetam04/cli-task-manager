@@ -1,8 +1,8 @@
-import fs from "fs";
-import { Command } from "commander";
 import chalk from "chalk";
-import { TaskTemplate } from "./TaskTemplate";
+import { Command } from "commander";
+import fs from "fs";
 import { Status, type Task } from "./types";
+import { createTask } from "./utils";
 
 const program = new Command();
 
@@ -16,7 +16,7 @@ program
       return;
     }
 
-    const newTask = new TaskTemplate(title);
+    const newTask = createTask(title);
     const prevData = fs.readFileSync("tasks.json", "utf-8");
 
     fs.writeFile(
@@ -32,17 +32,6 @@ program
         }
       },
     );
-  });
-
-program
-  .command("list")
-  .description("List all tasks")
-  .action(() => {
-    const data = fs.readFileSync("./tasks.json", "utf-8");
-
-    const tasks = JSON.parse(data);
-    console.log(chalk.green("All tasks"));
-    console.table(tasks, ["id", "title", "status", "createdAt"]);
   });
 
 program
@@ -125,7 +114,7 @@ program
   });
 
 program
-  .command("task-completed")
+  .command("mark-completed")
   .description("Update Task Title.")
   .argument("<id>", "Id of the task")
   .action((id: string, title: string) => {
@@ -161,31 +150,34 @@ program
   });
 
 program
-  .command("get-all-pending-task")
-  .description("Get all pending task")
-  .action(() => {
+  .command("list")
+  .description("List all task ")
+  .option("-p, --pending", "List all pending tasks")
+  .option("-c, --completed", "List all completed tasks")
+  .action(async (options) => {
     const data = fs.readFileSync("./tasks.json", "utf-8");
+
     const tasks = JSON.parse(data);
 
-    const pendingTasks = tasks.filter(
-      (task: Task) => task.status === Status.PENDING,
-    );
+    if (options?.completed && !options?.pending) {
+      console.table(
+        tasks.filter((task: Task) => task.status === Status.COMPLETED),
+        ["id", "title", "status", "createdAt"],
+      );
 
-    console.table(pendingTasks, ["id", "title", "status", "createdAt"]);
-  });
+      return;
+    }
 
-program
-  .command("get-all-completed-task")
-  .description("Get all completed task")
-  .action(() => {
-    const data = fs.readFileSync("./tasks.json", "utf-8");
-    const tasks = JSON.parse(data);
+    if (options?.pending && !options?.completed) {
+      console.table(
+        tasks.filter((task: Task) => task.status === Status.PENDING),
+        ["id", "title", "status", "createdAt"],
+      );
 
-    const completedTasks = tasks.filter(
-      (task: Task) => task.status === Status.COMPLETED,
-    );
+      return;
+    }
 
-    console.table(completedTasks, ["id", "title", "status", "createdAt"]);
+    console.table(tasks, ["id", "title", "status", "createdAt"]);
   });
 
 program.parse();
